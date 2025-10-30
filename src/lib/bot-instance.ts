@@ -17,6 +17,3 @@ export const bot = new Bot(token || '');
 setupCommands(bot);
 
 // Initialize bot and handle potential errors
-bot.init().catch((err) => {
-  console.error('Error initializing bot:', err);
-});
