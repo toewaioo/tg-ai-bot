@@ -9,7 +9,6 @@ import { getCandlestickData, getCryptoData } from './gemini-api';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trend';
 import { advancedCryptoAnalyzer } from '@/ai/flows/advanced-crypto-analyzer';
 
-
 // Reusable function to perform analysis and reply
 async function performAnalysis(ctx: Context, coin: string) {
   try {
@@ -76,8 +75,7 @@ Here are the commands you can use:
 /unsubscribe <COIN> - Stop getting updates for a coin.
 /list - See your current subscriptions.
 /analyze <COIN> - Get an instant AI analysis for a coin.
-/advanced_analyze <COIN> <TIMEFRAME> - Get a detailed analysis based on historical data.
-  └─ Timeframes: 1m, 5m, 15m, 30m, 1hr, 6hr, 1day
+/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis (5m, 15m, 1hr, 6hr).
 /help - Show this message again.
 
 Or use the buttons below for a quick analysis:`;
@@ -140,98 +138,66 @@ Or use the buttons below for a quick analysis:`;
     await performAnalysis(ctx, coin);
     return;
   });
-  bot.command('advanced_analyze', async (ctx) => {
-    await ctx.reply(
-      'Please specify a coin and a timeframe. Usage: /advanced_analyze <COIN> <TIMEFRAME>'
-    );
-    return;
-  });
-  bot.command('ad', async (ctx) => {
-    const parts = ctx.match.trim().split(' ');
-    const coin = parts[0]?.toUpperCase();
-    const timeframe = parts[1];
 
-    if (!coin || !timeframe) {
+  bot.command('advanced_analyze', async (ctx) => {
+    const coin = ctx.match.trim().toUpperCase();
+
+    if (!coin) {
       await ctx.reply(
-        'Please specify a coin and a timeframe. Usage: /advanced_analyze <COIN> <TIMEFRAME>'
+        'Please specify a coin symbol. Usage: /advanced_analyze <COIN>'
       );
       return;
     }
-    
-    const validTimeframes = ['1m', '5m', '15m', '30m', '1hr', '6hr', '1day'];
-    if (!validTimeframes.includes(timeframe)) {
-       await ctx.reply(
-        `Invalid timeframe. Please use one of: ${validTimeframes.join(', ')}`
-      );
-       return;
-    }
-    
-    await ctx.reply(`🔬 Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
-    let candlestickData;
-    let analysis;
+
+    await ctx.reply(`🔬 Performing multi-timeframe analysis for ${coin}. This may take a moment...`);
+
+    const timeframes = ['5m', '15m', '1hr', '6hr'];
+
     try {
-        candlestickData = await getCandlestickData(coin, timeframe);
-        if (!candlestickData || candlestickData.length === 0) {
-            await ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
-            return;
-        }
-      } catch (err) {
-        console.error(err);
-        await ctx.reply(`⚠️ Failed to fetch candlestick data. Please try again later.`);
-        return; // stop command
-    }
-    try {
-         analysis = await advancedCryptoAnalyzer({
+      const analyses = await Promise.all(
+        timeframes.map(async (timeframe) => {
+          const candlestickData = await getCandlestickData(coin, timeframe);
+          if (!candlestickData || candlestickData.length === 0) {
+            return `Could not fetch candlestick data for timeframe ${timeframe}.`;
+          }
+          const analysis = await advancedCryptoAnalyzer({
             cryptoSymbol: coin,
             timeframe: timeframe,
             candlestickData: JSON.stringify(candlestickData),
-        });
+          });
+          return { timeframe, analysis };
+        })
+      );
+
+      let finalReport = `*🔍 Advanced Multi-Timeframe Analysis for ${coin}*\n\n`;
+
+      for (const result of analyses) {
+        if (typeof result === 'string') {
+          finalReport += `*Timeframe: N/A*\n${result}\n\n`;
+          continue;
+        }
+
+        const { timeframe, analysis } = result;
 
         const trendEmoji = {
-            'strong bullish': '🚀',
-            'bullish': '📈',
-            'neutral': '📊',
-            'bearish': '📉',
-            'strong bearish': '🚨'
+          'strong bullish': '🚀',
+          bullish: '📈',
+          neutral: '📊',
+          bearish: '📉',
+          'strong bearish': '🚨',
         }[analysis.trend];
-        const indicatorsText = analysis.indicators
-        ? `*📊 Indicators:*
-RSI: ${analysis.indicators.rsi ?? 'N/A'}
-MACD: ${analysis.indicators.macd ?? 'N/A'}
-EMA Short: ${analysis.indicators.emaShort ?? 'N/A'}
-EMA Long: ${analysis.indicators.emaLong ?? 'N/A'}
-Volume Trend: ${analysis.indicators.volumeTrend ?? 'N/A'}`
-        : '';
-        const escapeMarkdown = (text: string) =>
-          text.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1');
-        const message = `
-*${trendEmoji} Advanced AI Analysis: ${coin} (${timeframe})*
--------------------------------------------------
-*Overall Trend:* ${analysis.trend}
-*Confidence:* ${Math.round(analysis.confidence * 100)}%
--------------------------------------------------
-*Overall Trend:* ${analysis.trend}
-*Confidence:* ${Math.round(analysis.confidence * 100)}%
-*Market Sentiment:* ${analysis.marketSentiment}
-*Volatility Level:* ${analysis.volatilityLevel}
-*Risk Level:* ${analysis.riskLevel}
-*AI Recommendation:* ${analysis.aiRecommendation}
----------------------------------------------------
-${indicatorsText ? escapeMarkdown(indicatorsText) : ''}
----------------------------------------------------
-*🔮 Short-Term Prediction:*
-${analysis.pricePrediction}
 
-*🧠 Detailed Analysis:*
-${analysis.analysis.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1')}
-`;
+        finalReport += `*====== ${timeframe.toUpperCase()} Analysis ======*\n`;
+        finalReport += `*Trend:* ${analysis.trend} ${trendEmoji}\n`;
+        finalReport += `*Recommendation:* ${analysis.aiRecommendation}\n`;
+        finalReport += `*Prediction:* ${analysis.pricePrediction}\n`;
+        finalReport += `*Summary:* ${analysis.reasoningSummary}\n\n`;
+      }
 
-        await ctx.reply(message, { parse_mode: 'Markdown' });
-
+      await ctx.reply(finalReport, { parse_mode: 'Markdown' });
     } catch (error) {
-        console.error(`Error in advanced analysis for ${coin}:`, error);
-        await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
-        return;
+      console.error(`Error in advanced multi-timeframe analysis for ${coin}:`, error);
+      await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
     }
     return;
   });

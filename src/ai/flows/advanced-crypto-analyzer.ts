@@ -76,27 +76,26 @@ const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
-  prompt: `You are an expert technical analyst for cryptocurrency markets.
+  prompt: `You are an expert technical analyst for cryptocurrency markets. Your task is to analyze the provided candlestick data for {{cryptoSymbol}} on the {{timeframe}} timeframe.
 
-Analyze the provided candlestick data for {{cryptoSymbol}} over the {{timeframe}} timeframe. The data is in the format [time, open, high, low, close, volume].
+The data is in the format [time, open, high, low, close, volume].
 
-Your analysis should include:
+Your analysis must be comprehensive and cover these key areas:
 1.  **Trend Identification**: Classify the current trend as 'strong bullish', 'bullish', 'neutral', 'bearish', or 'strong bearish'.
-2.  **Pattern Recognition**: Identify any significant chart patterns (e.g., head and shoulders, double top/bottom, triangles, flags).
-3.  **Support and Resistance**: Identify key support and resistance levels.
-4.  **Volume Analysis**: Comment on the trading volume and how it supports the trend or indicates potential reversals.
-5.  **Price Prediction**: Provide a brief, short-term price prediction.
-6.  **Confidence Score**: Provide a confidence score from 0 to 1 for your overall analysis.
-ANALYSIS FRAMEWORK:
-1. TECHNICAL ANALYSIS: Analyze price action, volume, key technical indicators
-2. SENTIMENT ANALYSIS: Evaluate market sentiment from news, social media, fear/greed
-3. MARKET CONTEXT: Consider broader market conditions and sector performance
-4. RISK ASSESSMENT: Identify potential risks and volatility levels
-5. PREDICTIVE INSIGHTS: Provide short-term and medium-term outlook
-Candlestick Data:
+2.  **Chart Patterns**: Identify significant chart patterns (e.g., head and shoulders, double top/bottom, triangles, flags).
+3.  **Support and Resistance**: Pinpoint key support and resistance levels.
+4.  **Volume Analysis**: Analyze trading volume and its implications for the trend.
+5.  **Indicator Analysis**: Interpret signals from RSI, MACD, and EMA crossovers if possible from the data.
+6.  **Market Sentiment**: Infer the market sentiment.
+7.  **Volatility and Risk**: Assess the current volatility and risk level.
+8.  **Price Prediction**: Provide a concise, short-term price prediction with key levels.
+9.  **AI Recommendation**: Give a clear 'strong buy', 'buy', 'hold', 'sell', or 'strong sell' recommendation.
+10. **Reasoning Summary**: Provide a brief, clear summary of why you made that recommendation.
+
+Candlestick Data for {{cryptoSymbol}} ({{timeframe}}):
 {{candlestickData}}
 
-Provide a detailed analysis in the 'analysis' field and a concise prediction in the 'pricePrediction' field.
+Fill out all fields in the output schema with your detailed analysis. The 'analysis' field should contain the full technical breakdown, and the 'reasoningSummary' should be a concise conclusion.
 `,
 });
 
