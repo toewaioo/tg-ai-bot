@@ -1,18 +1,15 @@
 import { webhookCallback } from 'grammy';
 import { bot } from '@/lib/bot-instance';
 import { setupCommands } from '@/lib/bot-commands';
-import { NextResponse } from 'next/server';
 
-// Only setup commands once
+// Setup commands before handling updates.
 setupCommands(bot);
 
 const handleUpdate = webhookCallback(bot, 'next-js');
 
-export const POST = handleUpdate;
-
-export async function GET() {
-  return NextResponse.json({ message: 'Hello from the CryptoTrendBot webhook endpoint!' });
-}
+export const POST = async (req: Request) => {
+  return await handleUpdate(req);
+};
 
 // A note on setting up the webhook:
 // To set the webhook, you can run the following command in your terminal
