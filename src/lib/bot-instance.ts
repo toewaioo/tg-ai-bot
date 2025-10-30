@@ -1,4 +1,5 @@
 import { Bot } from 'grammy';
+import { setupCommands } from './bot-commands';
 
 // Use NEXT_PUBLIC_TELEGRAM_BOT_TOKEN to be consistent and available for the client-side link.
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -11,3 +12,11 @@ if (!token) {
 
 // Create bot object
 export const bot = new Bot(token || '');
+
+// Register commands
+setupCommands(bot);
+
+// Initialize bot and handle potential errors
+bot.init().catch((err) => {
+  console.error('Error initializing bot:', err);
+});

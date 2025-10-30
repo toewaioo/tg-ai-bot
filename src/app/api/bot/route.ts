@@ -8,9 +8,7 @@ import { Bot, webhookCallback } from 'grammy'
 import { bot } from '@/lib/bot-instance';
 import { setupCommands } from '@/lib/bot-commands';
 setupCommands(bot);
-bot.on('message:text', async (ctx) => {
-  await ctx.reply(ctx.message.text)
-})
+
 
 export const POST = webhookCallback(bot, 'std/http')
 export async function GET() {
