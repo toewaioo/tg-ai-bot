@@ -1,4 +1,5 @@
-import type { Bot } from 'grammy';
+import type { Bot, Context } from 'grammy';
+import { InlineKeyboard } from 'grammy';
 import {
   addSubscription,
   getSubscriptions,
@@ -7,9 +8,65 @@ import {
 import { getCryptoData } from './gemini-api';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trend';
 
+// Reusable function to perform analysis and reply
+async function performAnalysis(ctx: Context, coin: string) {
+  try {
+    // Acknowledge the interaction first
+    if (ctx.callbackQuery) {
+      await ctx.answerCallbackQuery({ text: `Analyzing ${coin}...` });
+    } else {
+      await ctx.reply(`Analyzing ${coin}...`);
+    }
+
+    // 1. Fetch market data
+    const marketData = await getCryptoData(coin);
+    if (!marketData) {
+      return ctx.reply(
+        `Could not fetch market data for ${coin}. Please make sure it's a valid symbol.`
+      );
+    }
+
+    // 2. Analyze trend with Genkit AI flow
+    const analysis = await analyzeCryptoTrend({
+      cryptoSymbol: coin,
+      marketData: JSON.stringify(marketData),
+    });
+
+    // 3. Send the result to the user
+    const trendEmoji =
+      analysis.trend === 'bullish'
+        ? '📈'
+        : analysis.trend === 'bearish'
+        ? '📉'
+        : '📊';
+
+    const message = `${trendEmoji} AI Analysis for ${coin}: The market is looking ${
+      analysis.trend
+    }.
+
+Reason: ${analysis.reason}
+Confidence: ${Math.round(analysis.confidence * 100)}%`;
+
+    // Use editMessageText if it's a callback query to avoid clutter
+    if (ctx.callbackQuery) {
+        await ctx.editMessageText(message);
+    } else {
+        await ctx.reply(message);
+    }
+  } catch (error) {
+    console.error(`Error in analysis for ${coin}:`, error);
+    await ctx.reply(`Sorry, an error occurred while analyzing ${coin}.`);
+  }
+}
+
 export const setupCommands = (bot: Bot) => {
-  bot.command('start', (ctx) => {
-    const welcomeMessage = `Welcome to CryptoTrendBot! 🤖
+  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE'];
+  const analyzeKeyboard = new InlineKeyboard();
+  popularCoins.forEach((coin) => {
+    analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`).row();
+  });
+
+  const welcomeMessage = `Welcome to CryptoTrendBot! 🤖
 I track crypto market trends using AI.
 
 Here are the commands you can use:
@@ -17,18 +74,20 @@ Here are the commands you can use:
 /unsubscribe <COIN> - Stop getting updates for a coin.
 /list - See your current subscriptions.
 /analyze <COIN> - Get an instant AI analysis for a coin.
-/help - Show this message again.`;
-    ctx.reply(welcomeMessage);
+/help - Show this message again.
+
+Or use the buttons below for a quick analysis:`;
+
+  bot.command('start', (ctx) => {
+    ctx.reply(welcomeMessage, {
+      reply_markup: analyzeKeyboard,
+    });
   });
 
   bot.command('help', (ctx) => {
-    const helpMessage = `Here are the commands you can use:
-/subscribe <COIN> - Get trend updates for a coin (e.g., /subscribe BTC).
-/unsubscribe <COIN> - Stop getting updates for a coin.
-/list - See your current subscriptions.
-/analyze <COIN> - Get an instant AI analysis for a coin.
-/help - Show this message again.`;
-    ctx.reply(helpMessage);
+    ctx.reply(welcomeMessage, {
+      reply_markup: analyzeKeyboard,
+    });
   });
 
   bot.command('subscribe', (ctx) => {
@@ -73,40 +132,14 @@ Here are the commands you can use:
         'Please specify a coin symbol. Usage: /analyze <COIN>'
       );
     }
+    await performAnalysis(ctx, coin);
+  });
 
-    try {
-      await ctx.reply(`Analyzing ${coin}...`);
-
-      // 1. Fetch market data
-      const marketData = await getCryptoData(coin);
-      if (!marketData) {
-        return ctx.reply(`Could not fetch market data for ${coin}. Please make sure it's a valid symbol.`);
-      }
-
-      // 2. Analyze trend with Genkit AI flow
-      const analysis = await analyzeCryptoTrend({
-        cryptoSymbol: coin,
-        marketData: JSON.stringify(marketData),
-      });
-
-      // 3. Send the result to the user
-      const trendEmoji =
-        analysis.trend === 'bullish'
-          ? '📈'
-          : analysis.trend === 'bearish'
-          ? '📉'
-          : '📊';
-          
-      const message = `${trendEmoji} AI Analysis for ${coin}: The market is looking ${analysis.trend}.
-
-Reason: ${analysis.reason}
-Confidence: ${Math.round(analysis.confidence * 100)}%`;
-
-      await ctx.reply(message);
-
-    } catch (error) {
-      console.error(`Error in /analyze command for ${coin}:`, error);
-      await ctx.reply(`Sorry, an error occurred while analyzing ${coin}.`);
+  // Handle inline keyboard button clicks for analysis
+  bot.callbackQuery(/analyze_(.+)/, async (ctx) => {
+    const coin = ctx.match[1];
+    if (coin) {
+      await performAnalysis(ctx, coin);
     }
   });
 };
