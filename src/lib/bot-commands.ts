@@ -43,18 +43,17 @@ async function performAnalysis(ctx: Context, coin: string) {
         ? '📉'
         : '📊';
 
-    const message = `${trendEmoji} AI Analysis for ${coin}: The market is looking ${
-      analysis.trend
-    }.
+    const message = `${trendEmoji} *AI Analysis for ${coin}*
 
-Reason: ${analysis.reason}
-Confidence: ${Math.round(analysis.confidence * 100)}%`;
+*Trend*: ${analysis.trend}
+*Reason*: ${analysis.reason}
+*Confidence*: ${Math.round(analysis.confidence * 100)}%`;
 
     // Use editMessageText if it's a callback query to avoid clutter
     if (ctx.callbackQuery) {
-        await ctx.editMessageText(message);
+        await ctx.editMessageText(message, { parse_mode: 'Markdown' });
     } else {
-        await ctx.reply(message);
+        await ctx.reply(message, { parse_mode: 'Markdown' });
     }
   } catch (error) {
     console.error(`Error in analysis for ${coin}:`, error);
@@ -139,6 +138,7 @@ Or use the buttons below for a quick analysis:`;
       return;
     }
     await performAnalysis(ctx, coin);
+    return;
   });
 
   bot.command('advanced_analyze', async (ctx) => {
@@ -161,7 +161,7 @@ Or use the buttons below for a quick analysis:`;
        return;
     }
     
-    await ctx.reply(`Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
+    await ctx.reply(`🔬 Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
 
     try {
         const candlestickData = await getCandlestickData(coin, timeframe);
@@ -184,15 +184,20 @@ Or use the buttons below for a quick analysis:`;
             'strong bearish': '🚨'
         }[analysis.trend];
 
-        const message = `${trendEmoji} Advanced Analysis for ${coin} (${timeframe})
+        const message = `
+*${trendEmoji} Advanced AI Analysis: ${coin} (${timeframe})*
+-------------------------------------------------
+*Overall Trend:* ${analysis.trend}
+*Confidence:* ${Math.round(analysis.confidence * 100)}%
 
-*Trend*: ${analysis.trend} (Confidence: ${Math.round(analysis.confidence * 100)}%)
-*Prediction*: ${analysis.pricePrediction}
+*🔮 Short-Term Prediction:*
+${analysis.pricePrediction}
 
-*Details*:
-${analysis.analysis}`;
+*🧠 Detailed Analysis:*
+${analysis.analysis.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1')}
+`;
 
-        await ctx.reply(message, { parse_mode: 'Markdown' });
+        await ctx.reply(message, { parse_mode: 'MarkdownV2' });
 
     } catch (error) {
         console.error(`Error in advanced analysis for ${coin}:`, error);
@@ -208,5 +213,6 @@ ${analysis.analysis}`;
     if (coin) {
       await performAnalysis(ctx, coin);
     }
+    return;
   });
 };
