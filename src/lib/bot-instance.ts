@@ -16,4 +16,3 @@ export const bot = new Bot(token || '');
 // Register commands
 setupCommands(bot);
 
-// Initialize bot and handle potential errors
