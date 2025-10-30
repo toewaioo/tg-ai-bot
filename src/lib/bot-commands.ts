@@ -61,5 +61,4 @@ Here are the commands you can use:
     }
     ctx.reply(`Your current subscriptions:\n- ${subscriptions.join('\n- ')}`);
   });
-  bot.start();
 };
