@@ -162,15 +162,16 @@ Or use the buttons below for a quick analysis:`;
     }
     
     await ctx.reply(`🔬 Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
-
+    let candlestickData;
+    let analysis;
     try {
-        const candlestickData = await getCandlestickData(coin, timeframe);
+        candlestickData = await getCandlestickData(coin, timeframe);
         if (!candlestickData || candlestickData.length === 0) {
             await ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
             return;
         }
 
-        const analysis = await advancedCryptoAnalyzer({
+         analysis = await advancedCryptoAnalyzer({
             cryptoSymbol: coin,
             timeframe: timeframe,
             candlestickData: JSON.stringify(candlestickData),
@@ -183,13 +184,27 @@ Or use the buttons below for a quick analysis:`;
             'bearish': '📉',
             'strong bearish': '🚨'
         }[analysis.trend];
-
+        const indicatorsText = analysis.indicators
+        ? `*📊 Indicators:*
+RSI: ${analysis.indicators.rsi ?? 'N/A'}
+MACD: ${analysis.indicators.macd ?? 'N/A'}
+EMA Short: ${analysis.indicators.emaShort ?? 'N/A'}
+EMA Long: ${analysis.indicators.emaLong ?? 'N/A'}
+Volume Trend: ${analysis.indicators.volumeTrend ?? 'N/A'}`
+        : '';
         const message = `
 *${trendEmoji} Advanced AI Analysis: ${coin} (${timeframe})*
 -------------------------------------------------
 *Overall Trend:* ${analysis.trend}
 *Confidence:* ${Math.round(analysis.confidence * 100)}%
-
+-------------------------------------------------
+*Overall Trend:* ${analysis.trend}
+*Confidence:* ${Math.round(analysis.confidence * 100)}%
+*Market Sentiment:* ${analysis.marketSentiment}
+*Volatility Level:* ${analysis.volatilityLevel}
+*Risk Level:* ${analysis.riskLevel}
+*AI Recommendation:* ${analysis.aiRecommendation}
+---------------------------------------------------
 *🔮 Short-Term Prediction:*
 ${analysis.pricePrediction}
 
