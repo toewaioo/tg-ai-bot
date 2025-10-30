@@ -5,8 +5,10 @@ import {
   getSubscriptions,
   removeSubscription,
 } from '@/lib/subscriptions';
-import { getCryptoData } from './gemini-api';
+import { getCandlestickData, getCryptoData } from './gemini-api';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trend';
+import { advancedCryptoAnalyzer } from '@/ai/flows/advanced-crypto-analyzer';
+
 
 // Reusable function to perform analysis and reply
 async function performAnalysis(ctx: Context, coin: string) {
@@ -60,7 +62,7 @@ Confidence: ${Math.round(analysis.confidence * 100)}%`;
 }
 
 export const setupCommands = (bot: Bot) => {
-  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE'];
+  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE','BNB','LTC','LINK','DOGE'];
   const analyzeKeyboard = new InlineKeyboard();
   popularCoins.forEach((coin) => {
     analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`).row();
@@ -74,6 +76,8 @@ Here are the commands you can use:
 /unsubscribe <COIN> - Stop getting updates for a coin.
 /list - See your current subscriptions.
 /analyze <COIN> - Get an instant AI analysis for a coin.
+/advanced_analyze <COIN> <TIMEFRAME> - Get a detailed analysis based on historical data.
+  └─ Timeframes: 1m, 5m, 15m, 30m, 1hr, 6hr, 1day
 /help - Show this message again.
 
 Or use the buttons below for a quick analysis:`;
@@ -134,6 +138,63 @@ Or use the buttons below for a quick analysis:`;
     }
     await performAnalysis(ctx, coin);
   });
+
+  bot.command('advanced_analyze', async (ctx) => {
+    const parts = ctx.match.trim().split(' ');
+    const coin = parts[0]?.toUpperCase();
+    const timeframe = parts[1];
+
+    if (!coin || !timeframe) {
+      return ctx.reply(
+        'Please specify a coin and a timeframe. Usage: /advanced_analyze <COIN> <TIMEFRAME>'
+      );
+    }
+    
+    const validTimeframes = ['1m', '5m', '15m', '30m', '1hr', '6hr', '1day'];
+    if (!validTimeframes.includes(timeframe)) {
+       return ctx.reply(
+        `Invalid timeframe. Please use one of: ${validTimeframes.join(', ')}`
+      );
+    }
+    
+    await ctx.reply(`Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
+
+    try {
+        const candlestickData = await getCandlestickData(coin, timeframe);
+        if (!candlestickData || candlestickData.length === 0) {
+            return ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
+        }
+
+        const analysis = await advancedCryptoAnalyzer({
+            cryptoSymbol: coin,
+            timeframe: timeframe,
+            candlestickData: JSON.stringify(candlestickData),
+        });
+
+        const trendEmoji = {
+            'strong bullish': '🚀',
+            'bullish': '📈',
+            'neutral': '📊',
+            'bearish': '📉',
+            'strong bearish': '🚨'
+        }[analysis.trend];
+
+        const message = `${trendEmoji} Advanced Analysis for ${coin} (${timeframe})
+
+*Trend*: ${analysis.trend} (Confidence: ${Math.round(analysis.confidence * 100)}%)
+*Prediction*: ${analysis.pricePrediction}
+
+*Details*:
+${analysis.analysis}`;
+
+        await ctx.reply(message, { parse_mode: 'Markdown' });
+
+    } catch (error) {
+        console.error(`Error in advanced analysis for ${coin}:`, error);
+        await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
+    }
+  });
+
 
   // Handle inline keyboard button clicks for analysis
   bot.callbackQuery(/analyze_(.+)/, async (ctx) => {
