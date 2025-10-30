@@ -7,8 +7,10 @@ import {
 } from '@/lib/subscriptions';
 import { getCandlestickData, getCryptoData } from './gemini-api';
 import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trend';
-import { advancedCryptoAnalyzer } from '@/ai/flows/advanced-crypto-analyzer';
-
+import {
+  advancedCryptoAnalyzer,
+  AdvancedCryptoAnalyzerOutput,
+} from '@/ai/flows/advanced-crypto-analyzer';
 
 // Reusable function to perform analysis and reply
 async function performAnalysis(ctx: Context, coin: string) {
@@ -51,9 +53,9 @@ async function performAnalysis(ctx: Context, coin: string) {
 
     // Use editMessageText if it's a callback query to avoid clutter
     if (ctx.callbackQuery) {
-        await ctx.editMessageText(message, { parse_mode: 'Markdown' });
+      await ctx.editMessageText(message, { parse_mode: 'Markdown' });
     } else {
-        await ctx.reply(message, { parse_mode: 'Markdown' });
+      await ctx.reply(message, { parse_mode: 'Markdown' });
     }
   } catch (error) {
     console.error(`Error in analysis for ${coin}:`, error);
@@ -62,10 +64,13 @@ async function performAnalysis(ctx: Context, coin: string) {
 }
 
 export const setupCommands = (bot: Bot) => {
-  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE','BNB','LTC','LINK','DOGE'];
+  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE', 'BNB', 'LTC', 'LINK'];
   const analyzeKeyboard = new InlineKeyboard();
-  popularCoins.forEach((coin) => {
-    analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`).row();
+  popularCoins.forEach((coin, index) => {
+    analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`);
+    if ((index + 1) % 2 === 0) {
+      analyzeKeyboard.row();
+    }
   });
 
   const welcomeMessage = `Welcome to CryptoTrendBot! 🤖
@@ -76,8 +81,7 @@ Here are the commands you can use:
 /unsubscribe <COIN> - Stop getting updates for a coin.
 /list - See your current subscriptions.
 /analyze <COIN> - Get an instant AI analysis for a coin.
-/advanced_analyze <COIN> <TIMEFRAME> - Get a detailed analysis based on historical data.
-  └─ Timeframes: 1m, 5m, 15m, 30m, 1hr, 6hr, 1day
+/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis.
 /help - Show this message again.
 
 Or use the buttons below for a quick analysis:`;
@@ -142,95 +146,97 @@ Or use the buttons below for a quick analysis:`;
   });
 
   bot.command('advanced_analyze', async (ctx) => {
-    const parts = ctx.match.trim().split(' ');
-    const coin = parts[0]?.toUpperCase();
-    const timeframe = parts[1];
-
-    if (!coin || !timeframe) {
+    const coin = ctx.match.trim().toUpperCase();
+    if (!coin) {
       await ctx.reply(
-        'Please specify a coin and a timeframe. Usage: /advanced_analyze <COIN> <TIMEFRAME>'
+        'Please specify a coin. Usage: /advanced_analyze <COIN>'
       );
       return;
     }
-    
-    const validTimeframes = ['1m', '5m', '15m', '30m', '1hr', '6hr', '1day'];
-    if (!validTimeframes.includes(timeframe)) {
-       await ctx.reply(
-        `Invalid timeframe. Please use one of: ${validTimeframes.join(', ')}`
-      );
-       return;
-    }
-    
-    await ctx.reply(`🔬 Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
-    let candlestickData;
-    let analysis;
+
+    const timeframes = ['5m', '15m', '1hr', '6hr'];
+    await ctx.reply(
+      `🔬 Performing multi-timeframe analysis for ${coin} on ${timeframes.join(
+        ', '
+      )}. This may take a moment...`
+    );
+
     try {
-        candlestickData = await getCandlestickData(coin, timeframe);
-        if (!candlestickData || candlestickData.length === 0) {
-            await ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
-            return;
-        }
-      } catch (err) {
-        console.error(err);
-        await ctx.reply(`⚠️ Failed to fetch candlestick data. Please try again later.`);
-        return; // stop command
-    }
-    try {
-         analysis = await advancedCryptoAnalyzer({
+      const analyses: (AdvancedCryptoAnalyzerOutput & {
+        timeframe: string;
+      })[] = await Promise.all(
+        timeframes.map(async (timeframe) => {
+          const candlestickData = await getCandlestickData(coin, timeframe);
+          if (!candlestickData || candlestickData.length === 0) {
+            throw new Error(
+              `Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`
+            );
+          }
+          const analysis = await advancedCryptoAnalyzer({
             cryptoSymbol: coin,
             timeframe: timeframe,
             candlestickData: JSON.stringify(candlestickData),
-        });
+          });
+          return { ...analysis, timeframe };
+        })
+      );
 
-        const trendEmoji = {
-            'strong bullish': '🚀',
-            'bullish': '📈',
-            'neutral': '📊',
-            'bearish': '📉',
-            'strong bearish': '🚨'
-        }[analysis.trend];
-        const indicatorsText = analysis.indicators
-        ? `*📊 Indicators:*
-RSI: ${analysis.indicators.rsi ?? 'N/A'}
-MACD: ${analysis.indicators.macd ?? 'N/A'}
-EMA Short: ${analysis.indicators.emaShort ?? 'N/A'}
-EMA Long: ${analysis.indicators.emaLong ?? 'N/A'}
-Volume Trend: ${analysis.indicators.volumeTrend ?? 'N/A'}`
-        : '';
-        const escapeMarkdown = (text: string) =>
-          text.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1');
-        const message = `
-*${trendEmoji} Advanced AI Analysis: ${coin} (${timeframe})*
--------------------------------------------------
-*Overall Trend:* ${analysis.trend}
-*Confidence:* ${Math.round(analysis.confidence * 100)}%
--------------------------------------------------
-*Overall Trend:* ${analysis.trend}
-*Confidence:* ${Math.round(analysis.confidence * 100)}%
-*Market Sentiment:* ${analysis.marketSentiment}
-*Volatility Level:* ${analysis.volatilityLevel}
-*Risk Level:* ${analysis.riskLevel}
-*AI Recommendation:* ${analysis.aiRecommendation}
----------------------------------------------------
-${indicatorsText ? escapeMarkdown(indicatorsText) : ''}
----------------------------------------------------
-*🔮 Short-Term Prediction:*
-${analysis.pricePrediction}
+      // Escape problematic characters for MarkdownV2
+      const escapeMarkdown = (text: string) => {
+        if (!text) return '';
+        // Escape all characters that are special in MarkdownV2
+        return text.replace(
+          /([_*\[\]()~`>#+\-=|{}.!])/g,
+          '\\$1'
+        );
+      };
+      
+      const trendEmoji = {
+        'strong bullish': '🚀',
+        bullish: '📈',
+        neutral: '📊',
+        bearish: '📉',
+        'strong bearish': '🚨',
+      };
 
-*🧠 Detailed Analysis:*
-${analysis.analysis.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1')}
+      const summaryMessage = `*🔍 Multi-Timeframe AI Analysis: ${coin}*
+      
+This report provides a consolidated view of the market across different timeframes.`;
+
+      const analysisMessages = analyses
+        .map((analysis) => {
+          return `
+---------------------------------------------
+*Timeframe: ${escapeMarkdown(analysis.timeframe)}* ${
+            trendEmoji[analysis.trend]
+          }
+*Trend:* ${escapeMarkdown(analysis.trend)}
+*Recommendation:* ${escapeMarkdown(analysis.aiRecommendation)}
+*Confidence:* ${Math.round(analysis.confidence * 100)}%
+
+*Analysis:* ${escapeMarkdown(analysis.reasoningSummary)}
+*Prediction:* ${escapeMarkdown(analysis.pricePrediction)}
 `;
+        })
+        .join('');
+      
+      const overallRecommendation = analyses[analyses.length-1].aiRecommendation; // Use the longest timeframe for overall
+      const finalMessage = `*Overall Recommendation (${analyses[analyses.length-1].timeframe}):* ${escapeMarkdown(overallRecommendation)}`;
+      
+      const fullMessage = summaryMessage + analysisMessages + `\n---------------------------------------------\n` + finalMessage;
 
-        await ctx.reply(message, { parse_mode: 'Markdown' });
+      await ctx.reply(fullMessage, { parse_mode: 'MarkdownV2' });
 
     } catch (error) {
-        console.error(`Error in advanced analysis for ${coin}:`, error);
-        await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
-        return;
+      console.error(`Error in advanced analysis for ${coin}:`, error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred.';
+      await ctx.reply(
+        `Sorry, an error occurred during the advanced analysis of ${coin}: ${errorMessage}`
+      );
     }
     return;
   });
-
 
   // Handle inline keyboard button clicks for analysis
   bot.callbackQuery(/analyze_(.+)/, async (ctx) => {

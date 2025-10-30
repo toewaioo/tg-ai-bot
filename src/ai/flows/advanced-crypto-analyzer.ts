@@ -76,7 +76,7 @@ const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
-  prompt: `You are an expert technical analyst for cryptocurrency markets.All response translate to burmese.
+  prompt: `You are an expert technical analyst for cryptocurrency markets.
 
 Analyze the provided candlestick data for {{cryptoSymbol}} over the {{timeframe}} timeframe. The data is in the format [time, open, high, low, close, volume].
 
