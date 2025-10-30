@@ -170,7 +170,12 @@ Or use the buttons below for a quick analysis:`;
             await ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
             return;
         }
-
+      } catch (err) {
+        console.error(err);
+        await ctx.reply(`⚠️ Failed to fetch candlestick data. Please try again later.`);
+        return; // stop command
+    }
+    try {
          analysis = await advancedCryptoAnalyzer({
             cryptoSymbol: coin,
             timeframe: timeframe,
@@ -192,6 +197,8 @@ EMA Short: ${analysis.indicators.emaShort ?? 'N/A'}
 EMA Long: ${analysis.indicators.emaLong ?? 'N/A'}
 Volume Trend: ${analysis.indicators.volumeTrend ?? 'N/A'}`
         : '';
+        const escapeMarkdown = (text: string) =>
+          text.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1');
         const message = `
 *${trendEmoji} Advanced AI Analysis: ${coin} (${timeframe})*
 -------------------------------------------------
@@ -205,6 +212,8 @@ Volume Trend: ${analysis.indicators.volumeTrend ?? 'N/A'}`
 *Risk Level:* ${analysis.riskLevel}
 *AI Recommendation:* ${analysis.aiRecommendation}
 ---------------------------------------------------
+${indicatorsText ? escapeMarkdown(indicatorsText) : ''}
+---------------------------------------------------
 *🔮 Short-Term Prediction:*
 ${analysis.pricePrediction}
 
@@ -217,6 +226,7 @@ ${analysis.analysis.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1')}
     } catch (error) {
         console.error(`Error in advanced analysis for ${coin}:`, error);
         await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
+        return;
     }
     return;
   });
