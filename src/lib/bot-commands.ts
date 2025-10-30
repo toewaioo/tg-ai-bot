@@ -143,61 +143,67 @@ Or use the buttons below for a quick analysis:`;
     const coin = ctx.match.trim().toUpperCase();
 
     if (!coin) {
-      await ctx.reply(
-        'Please specify a coin symbol. Usage: /advanced_analyze <COIN>'
-      );
-      return;
+        await ctx.reply('Please specify a coin symbol. Usage: /advanced_analyze <COIN>');
+        return;
     }
 
-    await ctx.reply(`🔬 Performing multi-timeframe analysis for ${coin}. This may take a moment...`);
+    await ctx.reply(`🔬 Performing comprehensive multi-timeframe analysis for ${coin}. This may take a moment...`);
 
     const timeframes = ['5m', '15m', '1hr', '6hr'];
 
     try {
-      const analyses = await Promise.all(
-        timeframes.map(async (timeframe) => {
-          const candlestickData = await getCandlestickData(coin, timeframe);
-          if (!candlestickData || candlestickData.length === 0) {
-            return `Could not fetch candlestick data for timeframe ${timeframe}.`;
-          }
-          const analysis = await advancedCryptoAnalyzer({
-            cryptoSymbol: coin,
-            timeframe: timeframe,
-            candlestickData: JSON.stringify(candlestickData),
-          });
-          return { timeframe, analysis };
-        })
-      );
+        // 1. Fetch all candlestick data in parallel
+        const candlestickDataPromises = timeframes.map(timeframe =>
+            getCandlestickData(coin, timeframe).then(data => ({ timeframe, data }))
+        );
+        const allCandlestickData = await Promise.all(candlestickDataPromises);
 
-      let finalReport = `*🔍 Advanced Multi-Timeframe Analysis for ${coin}*\n\n`;
-
-      for (const result of analyses) {
-        if (typeof result === 'string') {
-          finalReport += `*Timeframe: N/A*\n${result}\n\n`;
-          continue;
+        const multiTimeframeCandlestickData: Record<string, string> = {};
+        let hasData = false;
+        
+        for (const { timeframe, data } of allCandlestickData) {
+            if (data && data.length > 0) {
+                multiTimeframeCandlestickData[timeframe] = JSON.stringify(data);
+                hasData = true;
+            } else {
+                console.warn(`No candlestick data for ${coin} on timeframe ${timeframe}`);
+            }
         }
 
-        const { timeframe, analysis } = result;
+        if (!hasData) {
+            await ctx.reply(`Could not fetch any historical data for ${coin}. Please check the symbol.`);
+            return;
+        }
 
+        // 2. Make a single AI request with all the data
+        const analysis = await advancedCryptoAnalyzer({
+            cryptoSymbol: coin,
+            multiTimeframeCandlestickData: multiTimeframeCandlestickData,
+        });
+        
+        // 3. Format and send the final report
         const trendEmoji = {
           'strong bullish': '🚀',
           bullish: '📈',
           neutral: '📊',
           bearish: '📉',
           'strong bearish': '🚨',
-        }[analysis.trend];
+        }[analysis.overallTrend];
 
-        finalReport += `*====== ${timeframe.toUpperCase()} Analysis ======*\n`;
-        finalReport += `*Trend:* ${analysis.trend} ${trendEmoji}\n`;
-        finalReport += `*Recommendation:* ${analysis.aiRecommendation}\n`;
-        finalReport += `*Prediction:* ${analysis.pricePrediction}\n`;
-        finalReport += `*Summary:* ${analysis.reasoningSummary}\n\n`;
-      }
+        let finalReport = `*🔍 Comprehensive AI Analysis for ${coin}*\n\n`;
+        finalReport += `*Overall Recommendation:* *${analysis.aiRecommendation.toUpperCase()}* ${trendEmoji}\n\n`;
+        finalReport += `*Summary:*\n${analysis.reasoningSummary}\n\n`;
+        finalReport += `*Detailed Analysis:*\n${analysis.comprehensiveAnalysis}\n\n`;
+        finalReport += `*Price Prediction:*\n${analysis.pricePrediction}\n\n`;
+        finalReport += `*Market Sentiment:* ${analysis.marketSentiment}\n`;
+        finalReport += `*Risk Level:* ${analysis.riskLevel}\n`;
+        finalReport += `*Confidence:* ${Math.round(analysis.confidence * 100)}%\n\n`;
+        finalReport += `_Analysis generated at ${analysis.timestamp}_`;
 
-      await ctx.reply(finalReport, { parse_mode: 'Markdown' });
+        await ctx.reply(finalReport, { parse_mode: 'Markdown' });
     } catch (error) {
-      console.error(`Error in advanced multi-timeframe analysis for ${coin}:`, error);
-      await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
+        console.error(`Error in advanced multi-timeframe analysis for ${coin}:`, error);
+        await ctx.reply(`Sorry, a critical error occurred during the advanced analysis of ${coin}.`);
     }
     return;
   });
