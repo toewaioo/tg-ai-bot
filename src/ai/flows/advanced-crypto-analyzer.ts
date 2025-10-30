@@ -46,7 +46,12 @@ Your analysis should include:
 4.  **Volume Analysis**: Comment on the trading volume and how it supports the trend or indicates potential reversals.
 5.  **Price Prediction**: Provide a brief, short-term price prediction.
 6.  **Confidence Score**: Provide a confidence score from 0 to 1 for your overall analysis.
-
+ANALYSIS FRAMEWORK:
+1. TECHNICAL ANALYSIS: Analyze price action, volume, key technical indicators
+2. SENTIMENT ANALYSIS: Evaluate market sentiment from news, social media, fear/greed
+3. MARKET CONTEXT: Consider broader market conditions and sector performance
+4. RISK ASSESSMENT: Identify potential risks and volatility levels
+5. PREDICTIVE INSIGHTS: Provide short-term and medium-term outlook
 Candlestick Data:
 {{candlestickData}}
 

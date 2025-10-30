@@ -23,9 +23,10 @@ async function performAnalysis(ctx: Context, coin: string) {
     // 1. Fetch market data
     const marketData = await getCryptoData(coin);
     if (!marketData) {
-      return ctx.reply(
+      await ctx.reply(
         `Could not fetch market data for ${coin}. Please make sure it's a valid symbol.`
       );
+      return;
     }
 
     // 2. Analyze trend with Genkit AI flow
@@ -132,9 +133,10 @@ Or use the buttons below for a quick analysis:`;
   bot.command('analyze', async (ctx) => {
     const coin = ctx.match.trim().toUpperCase();
     if (!coin) {
-      return ctx.reply(
+      await ctx.reply(
         'Please specify a coin symbol. Usage: /analyze <COIN>'
       );
+      return;
     }
     await performAnalysis(ctx, coin);
   });
@@ -145,16 +147,18 @@ Or use the buttons below for a quick analysis:`;
     const timeframe = parts[1];
 
     if (!coin || !timeframe) {
-      return ctx.reply(
+      await ctx.reply(
         'Please specify a coin and a timeframe. Usage: /advanced_analyze <COIN> <TIMEFRAME>'
       );
+      return;
     }
     
     const validTimeframes = ['1m', '5m', '15m', '30m', '1hr', '6hr', '1day'];
     if (!validTimeframes.includes(timeframe)) {
-       return ctx.reply(
+       await ctx.reply(
         `Invalid timeframe. Please use one of: ${validTimeframes.join(', ')}`
       );
+       return;
     }
     
     await ctx.reply(`Performing advanced analysis for ${coin} on the ${timeframe} timeframe. This may take a moment...`);
@@ -162,7 +166,8 @@ Or use the buttons below for a quick analysis:`;
     try {
         const candlestickData = await getCandlestickData(coin, timeframe);
         if (!candlestickData || candlestickData.length === 0) {
-            return ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
+            await ctx.reply(`Could not fetch candlestick data for ${coin} on the ${timeframe} timeframe.`);
+            return;
         }
 
         const analysis = await advancedCryptoAnalyzer({
@@ -193,6 +198,7 @@ ${analysis.analysis}`;
         console.error(`Error in advanced analysis for ${coin}:`, error);
         await ctx.reply(`Sorry, an error occurred during the advanced analysis of ${coin}.`);
     }
+    return;
   });
 
 
