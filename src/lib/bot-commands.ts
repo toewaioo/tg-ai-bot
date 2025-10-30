@@ -197,7 +197,7 @@ ${analysis.pricePrediction}
 ${analysis.analysis.replace(/([*_`\[\]()~>#+\-=|{}.!])/g, '\\$1')}
 `;
 
-        await ctx.reply(message, { parse_mode: 'MarkdownV2' });
+        await ctx.reply(message, { parse_mode: 'Markdown' });
 
     } catch (error) {
         console.error(`Error in advanced analysis for ${coin}:`, error);
