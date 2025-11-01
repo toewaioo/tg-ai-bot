@@ -14,8 +14,8 @@ if (!token) {
 // Create bot object
 export const bot = new Bot(token || '');
 
-// Register commands
-setupCommands(bot);
 //
 setupForwardVideosCommands(bot)
+// Register commands
+setupCommands(bot);
 
