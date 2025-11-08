@@ -45,7 +45,7 @@ export default function Home() {
                 <div className="w-full max-w-sm space-y-2">
                   <a
                     href={`https://t.me/${
-                      process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'your_bot_name'
+                      process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'toewaioo_bot'
                     }`}
                     target="_blank"
                     rel="noopener noreferrer"
