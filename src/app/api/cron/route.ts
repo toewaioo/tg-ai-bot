@@ -76,7 +76,7 @@ export async function GET() {
         }
       }
       
-      // 5. Update the last known signal
+      // 5. Update the last known signa
       setLastTrend(coin, currentSignal);
 
     } catch (error) {
