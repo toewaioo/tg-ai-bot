@@ -59,7 +59,7 @@ export async function advancedCryptoAnalyzer(input: AdvancedCryptoAnalyzerInput)
 const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
-  output: { schema: Advanced-CryptoAnalyzerOutputSchema },
+  output: { schema: AdvancedCryptoAnalyzerOutputSchema },
   prompt: `You are an expert technical analyst for cryptocurrency markets. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick data provided for various timeframes.
 
 Your analysis must be holistic. Synthesize the information from all timeframes to provide a single, unified assessment. Do not just analyze each timeframe in isolation.
