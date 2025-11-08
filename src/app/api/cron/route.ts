@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { analyzeCryptoTrend } from '@/ai/flows/analyze-crypto-trend';
+import { advancedCryptoAnalyzer } from '@/ai/flows/advanced-crypto-analyzer';
 import { bot } from '@/lib/bot-instance';
-import { getCryptoData } from '@/lib/gemini-api';
 import { getAllSubscriptions, getAllUniqueCoins } from '@/lib/subscriptions';
+import { getCandlestickData } from '@/lib/gemini-api';
 import { getLastTrend, setLastTrend } from '@/lib/trends';
 
-export const dynamic = 'force-dynamic'; // Ensures the route is not cached
+export const dynamic = 'force-dynamic';
 
-// This function is triggered by the Vercel Cron Job
 export async function GET() {
-  console.log('Cron job started: Analyzing crypto trends.');
+  console.log('Cron job started: Analyzing crypto signals.');
 
   const uniqueCoins = getAllUniqueCoins();
   if (uniqueCoins.length === 0) {
@@ -21,60 +20,67 @@ export async function GET() {
 
   for (const coin of uniqueCoins) {
     try {
-      // 1. Fetch market data from Gemini Exchange
-      const marketData = await getCryptoData(coin);
-      if (!marketData) {
-        console.warn(`Could not fetch data for ${coin}.`);
+      // 1. Fetch candlestick data for multiple timeframes
+      const timeframes = ['5m', '15m', '1hr', '6hr'];
+      const candlestickDataPromises = timeframes.map(timeframe =>
+          getCandlestickData(coin, timeframe).then(data => ({ timeframe, data }))
+      );
+      const allCandlestickData = await Promise.all(candlestickDataPromises);
+
+      const multiTimeframeCandlestickData: Record<string, string> = {};
+      let hasData = false;
+      
+      for (const { timeframe, data } of allCandlestickData) {
+          if (data && data.length > 0) {
+              multiTimeframeCandlestickData[timeframe] = JSON.stringify(data);
+              hasData = true;
+          }
+      }
+
+      if (!hasData) {
+        console.warn(`Could not fetch any candlestick data for ${coin}.`);
         continue;
       }
 
-      // 2. Analyze trend with Genkit AI flow
-      const analysis = await analyzeCryptoTrend({
+      // 2. Analyze trend with the advanced AI flow
+      const analysis = await advancedCryptoAnalyzer({
         cryptoSymbol: coin,
-        marketData: JSON.stringify(marketData),
+        multiTimeframeCandlestickData,
       });
 
-      const currentTrend = analysis.trend;
-      const lastTrend = getLastTrend(coin);
+      const currentSignal = analysis.aiRecommendation;
+      const lastSignal = getLastTrend(coin); // Using the same trend cache for signals
 
-      console.log(
-        `Analyzed ${coin}: Last trend was '${lastTrend}', current trend is '${currentTrend}'.`
-      );
+      console.log(`Analyzed ${coin}: Last signal was '${lastSignal}', current signal is '${currentSignal}'.`);
 
-      // 3. Compare with last trend and notify if it has changed
-      if (lastTrend && currentTrend !== lastTrend) {
-        console.log(
-          `Trend changed for ${coin} to ${currentTrend}. Notifying subscribers.`
-        );
+      // 3. Notify only on strong, changed signals
+      const isStrongSignal = currentSignal === 'strong buy' || currentSignal === 'strong sell';
+      if (isStrongSignal && currentSignal !== lastSignal) {
+        console.log(`Strong signal change for ${coin} to ${currentSignal}. Notifying subscribers.`);
 
-        // Find all users subscribed to this coin
         const subscriberChatIds = Object.entries(allSubscriptions)
           .filter(([_, { subscriptions }]) => subscriptions.includes(coin))
           .map(([chatId]) => Number(chatId));
 
         if (subscriberChatIds.length > 0) {
-          const trendEmoji =
-            currentTrend === 'bullish'
-              ? '📈'
-              : currentTrend === 'bearish'
-              ? '📉'
-              : '📊';
-          const message = `${trendEmoji} Trend Alert for ${coin}! The market is now looking ${currentTrend}.
+          const signalEmoji = currentSignal === 'strong buy' ? '🟢' : '🔴';
+          const message = `${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 
-Reason: ${analysis.reason}`;
+*Reasoning*: ${analysis.reasoningSummary}
 
-          // 4. Send notifications via Telegram
+*Disclaimer: This is not financial advice. Trade at your own risk.*`;
+
           for (const chatId of subscriberChatIds) {
-            await bot.api.sendMessage(chatId, message).catch(console.error);
+            await bot.api.sendMessage(chatId, message, { parse_mode: 'Markdown' }).catch(console.error);
           }
         }
       }
       
-      // 5. Update the last known trend
-      setLastTrend(coin, currentTrend);
+      // 5. Update the last known signal
+      setLastTrend(coin, currentSignal);
 
     } catch (error) {
-      console.error(`Error processing trend for ${coin}:`, error);
+      console.error(`Error processing signal for ${coin}:`, error);
     }
   }
 

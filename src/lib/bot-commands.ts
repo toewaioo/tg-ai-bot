@@ -63,31 +63,41 @@ async function performAnalysis(ctx: Context, coin: string) {
 export const setupCommands = (bot: Bot) => {
   const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE','BNB','LTC','LINK','DOGE'];
   const analyzeKeyboard = new InlineKeyboard();
-  popularCoins.forEach((coin) => {
-    analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`).row();
+  popularCoins.forEach((coin, index) => {
+    analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`);
+    if ((index + 1) % 2 === 0) {
+      analyzeKeyboard.row();
+    }
   });
 
-  const welcomeMessage = `Welcome to CryptoTrendBot! 🤖
-I track crypto market trends using AI.
 
-Here are the commands you can use:
-/subscribe <COIN> - Get trend updates for a coin (e.g., /subscribe BTC).
-/unsubscribe <COIN> - Stop getting updates for a coin.
+  const welcomeMessage = `Welcome to your AI Crypto Trading Assistant! 🤖
+
+I provide real-time market analysis, financial advice, and trading signals.
+
+*Commands:*
+/subscribe <COIN> - Get signal notifications for a coin (e.g., /subscribe BTC).
+/unsubscribe <COIN> - Stop getting notifications.
 /list - See your current subscriptions.
 /analyze <COIN> - Get an instant AI analysis for a coin.
-/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis (5m, 15m, 1hr, 6hr).
+/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis report.
 /help - Show this message again.
 
-Or use the buttons below for a quick analysis:`;
+*Quick Analysis:*
+Use the buttons below for a quick analysis of popular coins.
+
+*Disclaimer*: I am an AI and this is not financial advice. All trading involves risk. Please do your own research.`;
 
   bot.command('start', (ctx) => {
     ctx.reply(welcomeMessage, {
+      parse_mode: 'Markdown',
       reply_markup: analyzeKeyboard,
     });
   });
 
   bot.command('help', (ctx) => {
     ctx.reply(welcomeMessage, {
+      parse_mode: 'Markdown',
       reply_markup: analyzeKeyboard,
     });
   });
@@ -101,7 +111,8 @@ Or use the buttons below for a quick analysis:`;
     }
     if (!ctx.chat?.id) return;
     addSubscription(ctx.chat.id, coin);
-    ctx.reply(`✅ Subscribed to ${coin}! You'll now receive trend updates.`);
+    ctx.reply(`✅ Subscribed to ${coin}! You'll now receive strong buy/sell signals.`);
+    return;
   });
 
   bot.command('unsubscribe', (ctx) => {
@@ -114,6 +125,7 @@ Or use the buttons below for a quick analysis:`;
     if (!ctx.chat?.id) return;
     removeSubscription(ctx.chat.id, coin);
     ctx.reply(`🚫 Unsubscribed from ${coin}.`);
+    return;
   });
 
   bot.command('list', (ctx) => {
@@ -121,10 +133,11 @@ Or use the buttons below for a quick analysis:`;
     const subscriptions = getSubscriptions(ctx.chat.id);
     if (subscriptions.length === 0) {
       return ctx.reply(
-        'You are not subscribed to any coins yet. Use /subscribe <COIN> to start.'
+        'You are not subscribed to any coins yet. Use /subscribe <COIN> to start getting signals.'
       );
     }
     ctx.reply(`Your current subscriptions:\n- ${subscriptions.join('\n- ')}`);
+    return;
   });
 
   bot.command('analyze', async (ctx) => {
