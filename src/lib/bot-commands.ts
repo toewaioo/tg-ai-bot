@@ -80,7 +80,7 @@ I constantly watch the market and will automatically send you a notification whe
 /unsubscribe <COIN> - Stop getting notifications.
 /list - See your current subscriptions.
 /analyze <COIN> - Get an instant AI analysis for a coin.
-/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis report.
+/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis report with a trade setup.
 /help - Show this message again.
 
 *Quick Analysis:*
@@ -203,15 +203,37 @@ Use the buttons below for a quick analysis of popular coins.
           'strong bearish': '🚨',
         }[analysis.overallTrend];
 
-        let finalReport = `*🔍 Comprehensive AI Analysis for ${coin}*\n\n`;
-        finalReport += `*Overall Recommendation:* *${analysis.aiRecommendation.toUpperCase()}* ${trendEmoji}\n\n`;
-        finalReport += `*Summary:*\n${analysis.reasoningSummary}\n\n`;
-        finalReport += `*Detailed Analysis:*\n${analysis.comprehensiveAnalysis}\n\n`;
-        finalReport += `*Price Prediction:*\n${analysis.pricePrediction}\n\n`;
-        finalReport += `*Market Sentiment:* ${analysis.marketSentiment}\n`;
-        finalReport += `*Risk Level:* ${analysis.riskLevel}\n`;
-        finalReport += `*Confidence:* ${Math.round(analysis.confidence * 100)}%\n\n`;
-        finalReport += `_Analysis generated at ${analysis.timestamp}_`;
+        const { tradeSetup } = analysis;
+
+        let finalReport = `*🔍 Comprehensive AI Analysis for ${coin}*
+
+*Overall Recommendation:* *${analysis.aiRecommendation.toUpperCase()}* ${trendEmoji}
+*Confidence:* ${Math.round(analysis.confidence * 100)}%
+*Risk Level:* ${analysis.riskLevel}
+
+*Summary:*
+${analysis.reasoningSummary}
+
+*Trade Setup:*
+- *Entry Price:* ${tradeSetup.entryPrice}
+- *Stop-Loss (SL):* ${tradeSetup.stopLoss}
+- *Take-Profit (TP):* ${tradeSetup.takeProfit}
+
+*Key Levels:*
+- *Support Zone:* ${tradeSetup.supportZone}
+- *Resistance Zone:* ${tradeSetup.resistanceZone}
+
+*Confirmation Signal:*
+${tradeSetup.confirmationSignal}
+
+*Breakout/Fakeout Analysis:*
+${tradeSetup.breakoutFakeoutAnalysis}
+
+*Detailed Analysis:*
+${analysis.comprehensiveAnalysis}
+
+_Analysis generated at ${analysis.timestamp}_
+`;
 
         await ctx.reply(finalReport, { parse_mode: 'Markdown' });
     } catch (error) {

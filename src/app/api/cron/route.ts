@@ -64,9 +64,21 @@ export async function GET() {
 
         if (subscriberChatIds.length > 0) {
           const signalEmoji = currentSignal === 'strong buy' ? '🟢' : '🔴';
-          const message = `${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
+          const { tradeSetup } = analysis;
+
+          const message = `
+${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 
 *Reasoning*: ${analysis.reasoningSummary}
+
+*Trade Setup:*
+- *Entry Price:* ${tradeSetup.entryPrice}
+- *Stop-Loss (SL):* ${tradeSetup.stopLoss}
+- *Take-Profit (TP):* ${tradeSetup.takeProfit}
+
+*Key Levels:*
+- *Support Zone:* ${tradeSetup.supportZone}
+- *Resistance Zone:* ${tradeSetup.resistanceZone}
 
 *Disclaimer: This is not financial advice. Trade at your own risk.*`;
 
