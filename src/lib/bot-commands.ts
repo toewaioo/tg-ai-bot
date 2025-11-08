@@ -73,7 +73,7 @@ export const setupCommands = (bot: Bot) => {
 
   const welcomeMessage = `Welcome to your AI Crypto Trading Assistant! 🤖
 
-I provide real-time market analysis, financial advice, and trading signals.
+I constantly watch the market and will automatically send you a notification when my AI analysis identifies a *strong buy* or *strong sell* signal for a coin you are subscribed to.
 
 *Commands:*
 /subscribe <COIN> - Get signal notifications for a coin (e.g., /subscribe BTC).
@@ -86,7 +86,7 @@ I provide real-time market analysis, financial advice, and trading signals.
 *Quick Analysis:*
 Use the buttons below for a quick analysis of popular coins.
 
-*Disclaimer*: I am an AI and this is not financial advice. All trading involves risk. Please do your own research.`;
+*Disclaimer*: This is an AI-powered tool and its analysis is for informational purposes only. It is not financial advice. All trading involves risk. Please do your own research.`;
 
   bot.command('start', (ctx) => {
     ctx.reply(welcomeMessage, {

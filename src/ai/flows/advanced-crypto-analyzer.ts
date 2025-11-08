@@ -60,7 +60,7 @@ const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
-  prompt: `You are an expert technical analyst for cryptocurrency markets. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick data provided for various timeframes.
+  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals to help users decide when to enter or exit positions. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick data provided for various timeframes.
 
 Your analysis must be holistic. Synthesize the information from all timeframes to provide a single, unified assessment. Do not just analyze each timeframe in isolation.
 
@@ -74,8 +74,8 @@ Your analysis must be holistic. Synthesize the information from all timeframes t
 1.  **Overall Trend Identification**: Based on the confluence or divergence of trends across the timeframes, classify the *overall* current trend. For example, if short timeframes are bullish but long timeframes are bearish, you might classify it as 'neutral' or 'bullish with caution'.
 2.  **Comprehensive Analysis**: In this main section, discuss your findings. How do the short-term patterns on the 5m and 15m charts fit into the larger structure of the 1hr and 6hr charts? Identify major support/resistance levels that are respected across multiple timeframes. Discuss volume trends and momentum indicators (RSI, MACD) in this multi-timeframe context.
 3.  **Market Sentiment, Risk, and Price Prediction**: Provide a single assessment for each of these, derived from your combined analysis.
-4.  **A Single AI Recommendation**: Based on everything, provide one clear recommendation: 'strong buy', 'buy', 'hold', 'sell', or 'strong sell'.
-5.  **Concise Reasoning**: Briefly summarize how you weighed the different timeframes to arrive at your final recommendation.
+4.  **A Single AI Recommendation**: This is the most important part. Based on everything, provide one clear, actionable recommendation: 'strong buy', 'buy', 'hold', 'sell', or 'strong sell'. A 'strong' signal indicates a high-conviction opportunity to enter or exit a position.
+5.  **Concise Reasoning**: Briefly summarize exactly how you weighed the different timeframes and indicators to arrive at your final recommendation.
 
 Fill out all fields in the output schema with your detailed, synthesized analysis.
 `,

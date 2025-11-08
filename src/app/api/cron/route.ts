@@ -49,7 +49,7 @@ export async function GET() {
       });
 
       const currentSignal = analysis.aiRecommendation;
-      const lastSignal = getLastTrend(coin); // Using the same trend cache for signals
+      const lastSignal = getLastTrend(coin);
 
       console.log(`Analyzed ${coin}: Last signal was '${lastSignal}', current signal is '${currentSignal}'.`);
 
@@ -76,7 +76,7 @@ export async function GET() {
         }
       }
       
-      // 5. Update the last known signa
+      // 4. Update the last known signal
       setLastTrend(coin, currentSignal);
 
     } catch (error) {
