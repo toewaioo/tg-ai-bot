@@ -1,7 +1,8 @@
+
 import { NextResponse } from 'next/server';
 import { advancedCryptoAnalyzer } from '@/ai/flows/advanced-crypto-analyzer';
 import { bot } from '@/lib/bot-instance';
-import { getAllSubscriptions, getAllUniqueCoins } from '@/lib/subscriptions';
+import { getAllUniqueCoins } from '@/lib/subscriptions';
 import { getCandlestickData } from '@/lib/gemini-api';
 import { getLastTrend, setLastTrend } from '@/lib/trends';
 
@@ -16,7 +17,7 @@ export async function GET() {
     return NextResponse.json({ status: 'ok', message: 'No subscriptions' });
   }
 
-  const allSubscriptions = getAllSubscriptions();
+  const adminChatId = -1002933829;
 
   for (const coin of uniqueCoins) {
     try {
@@ -56,17 +57,12 @@ export async function GET() {
       // 3. Notify only on strong, changed signals
       const isStrongSignal = currentSignal === 'strong buy' || currentSignal === 'strong sell';
       if (isStrongSignal && currentSignal !== lastSignal) {
-        console.log(`Strong signal change for ${coin} to ${currentSignal}. Notifying subscribers.`);
+        console.log(`Strong signal change for ${coin} to ${currentSignal}. Notifying admin.`);
 
-        const subscriberChatIds = Object.entries(allSubscriptions)
-          .filter(([_, { subscriptions }]) => subscriptions.includes(coin))
-          .map(([chatId]) => Number(chatId));
+        const signalEmoji = currentSignal === 'strong buy' ? '🟢' : '🔴';
+        const { tradeSetup } = analysis;
 
-        if (subscriberChatIds.length > 0) {
-          const signalEmoji = currentSignal === 'strong buy' ? '🟢' : '🔴';
-          const { tradeSetup } = analysis;
-
-          const message = `
+        const message = `
 ${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 
 *Reasoning*: ${analysis.reasoningSummary}
@@ -82,10 +78,7 @@ ${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 
 *Disclaimer: This is not financial advice. Trade at your own risk.*`;
 
-          for (const chatId of subscriberChatIds) {
-            await bot.api.sendMessage(chatId, message, { parse_mode: 'Markdown' }).catch(console.error);
-          }
-        }
+          await bot.api.sendMessage(adminChatId, message, { parse_mode: 'Markdown' }).catch(console.error);
       }
       
       // 4. Update the last known signal
