@@ -12,10 +12,10 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const CandlestickDataSchema = z.string().describe('The recent candlestick data (OHLCV) for the cryptocurrency in JSON format, as a string.');
-
 const AdvancedCryptoAnalyzerInputSchema = z.object({
   cryptoSymbol: z.string().describe('The symbol of the cryptocurrency to analyze (e.g., BTC).'),
   multiTimeframeCandlestickData: z.record(CandlestickDataSchema).describe('An object where keys are timeframes (e.g., "5m", "1hr") and values are the candlestick data for that timeframe.'),
+  marketData: z.string().describe('The recent market data for the cryptocurrency, including price and volume.'),
 });
 export type AdvancedCryptoAnalyzerInput = z.infer<typeof AdvancedCryptoAnalyzerInputSchema>;
 
@@ -69,15 +69,16 @@ const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
-  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals and provide a complete trade setup. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick data provided.
+  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals and provide a complete trade setup. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick  and {{marketData}} data provided.
 
 Your analysis must be holistic. Synthesize the information from all timeframes to provide a single, unified assessment. Do not just analyze each timeframe in isolation.
-
+**Market Data:**\n{{marketData}}\n
 **Candlestick Data (JSON format [time, open, high, low, close, volume]):**
 {{#each multiTimeframeCandlestickData}}
 - **Timeframe: {{@key}}**
   {{{this}}}
 {{/each}}
+
 
 **Your analysis MUST include the following:**
 
@@ -93,7 +94,7 @@ Your analysis must be holistic. Synthesize the information from all timeframes t
     *   **Take-Profit (TP):** Suggest a realistic take-profit target.
 5.  **Reasoning Summary**: Briefly summarize how you weighed the different timeframes and indicators to arrive at your final recommendation and trade setup.
 
-Fill out ALL fields in the output schema with your detailed, synthesized analysis.
+Fill out ALL fields in the output schema with your detailed, synthesized analysis.Explain to burmese language.
 `,
 });
 

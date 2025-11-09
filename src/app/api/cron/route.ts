@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { advancedCryptoAnalyzer } from '@/ai/flows/advanced-crypto-analyzer';
 import { bot } from '@/lib/bot-instance';
 import { getAllUniqueCoins } from '@/lib/subscriptions';
-import { getCandlestickData } from '@/lib/gemini-api';
+import { getCandlestickData ,getCryptoData} from '@/lib/gemini-api';
 import { getLastTrend, setLastTrend } from '@/lib/trends';
 
 export const dynamic = 'force-dynamic';
@@ -42,11 +42,17 @@ export async function GET() {
         console.warn(`Could not fetch any candlestick data for ${coin}.`);
         return;
       }
-
+      const marketData = await getCryptoData(coin);
+      if (!marketData) {
+        console.warn(`Could not fetch any candlestick data for ${coin}.`);
+        return;
+      }
       // 2. Analyze trend with the advanced AI flow
       const analysis = await advancedCryptoAnalyzer({
         cryptoSymbol: coin,
         multiTimeframeCandlestickData,
+        marketData: JSON.stringify(marketData)
+       
       });
 
       const currentSignal = analysis.aiRecommendation;
@@ -64,8 +70,6 @@ export async function GET() {
 
         const message = `
 ${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
-
-
 
 *Trade Setup:*
 - *Entry Price:* ${tradeSetup.entryPrice}

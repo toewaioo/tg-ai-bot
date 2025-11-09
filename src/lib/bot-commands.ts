@@ -164,7 +164,7 @@ Use the buttons below for a quick analysis of popular coins.
 
     await ctx.reply(`🔬 Performing comprehensive multi-timeframe analysis for ${coin}. This may take a moment...`);
 
-    const timeframes = ['5m', '15m', '1hr', '6hr'];
+    const timeframes = ['5m', '15m','30m', '1hr', '6hr'];
 
     try {
         // 1. Fetch all candlestick data in parallel
@@ -191,9 +191,11 @@ Use the buttons below for a quick analysis of popular coins.
         }
 
         // 2. Make a single AI request with all the data
+        const marketData = await getCryptoData(coin);
         const analysis = await advancedCryptoAnalyzer({
             cryptoSymbol: coin,
             multiTimeframeCandlestickData: multiTimeframeCandlestickData,
+            marketData: JSON.stringify(marketData)
         });
         
         // 3. Format and send the final report

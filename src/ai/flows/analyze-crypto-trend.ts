@@ -32,7 +32,7 @@ const prompt = ai.definePrompt({
   name: 'analyzeCryptoTrendPrompt',
   input: {schema: AnalyzeCryptoTrendInputSchema},
   output: {schema: AnalyzeCryptoTrendOutputSchema},
-  prompt: `You are a crypto market analyst. Analyze the market data for {{cryptoSymbol}} and classify the trend as bullish, bearish, or neutral.\n\nMarket Data:\n{{marketData}}\n\nProvide a confidence level (0-1) for your classification and a brief reason for your analysis. Output the result in JSON format. Ensure the JSON is parseable.\n`,
+  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Analyze the market data for {{cryptoSymbol}} and classify the trend as bullish, bearish, or neutral.\n\nMarket Data:\n{{marketData}}\n\nProvide a confidence level (0-1) for your classification and a brief reason for your analysis. Output the result in JSON format. Ensure the JSON is parseable.\n`,
 });
 
 const analyzeCryptoTrendFlow = ai.defineFlow(
