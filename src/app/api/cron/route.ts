@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   console.log('Cron job started: Analyzing crypto signals.');
 
-  const uniqueCoins = ['SOL',BTC];
+  const uniqueCoins = ['SOL','BTC'];
   if (uniqueCoins.length === 0) {
     console.log('No subscriptions found. Skipping analysis.');
     return NextResponse.json({ status: 'ok', message: 'No subscriptions' });
