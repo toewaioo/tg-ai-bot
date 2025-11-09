@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json({ status: 'ok', message: 'No subscriptions' });
   }
 
-  const adminChatId = 1728454364;
+  const adminChatId = -1002933829;
 
   for (const coin of uniqueCoins) {
     try {
@@ -75,6 +75,9 @@ ${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 *Key Levels:*
 - *Support Zone:* ${tradeSetup.supportZone}
 - *Resistance Zone:* ${tradeSetup.resistanceZone}
+
+*Confirmation Signal to Enter:*
+${tradeSetup.confirmationSignal}
 
 *Disclaimer: This is not financial advice. Trade at your own risk.*`;
 
