@@ -13,7 +13,7 @@ import {z} from 'genkit';
 
 const AnalyzeCryptoTrendInputSchema = z.object({
   cryptoSymbol: z.string().describe('The symbol of the cryptocurrency to analyze (e.g., BTC).'),
-  marketData: z.string().describe('The recent market data for the cryptocurrency, including price and volume.'),
+  marketData: z.string().describe('The current market data for the  cryptocurrency, including price and high pices and low price from past 24 hour ago and and changes -> hourly prices desending for past 24 hour and bid for current bid price and ask for current ask price for this coin.'),
 });
 export type AnalyzeCryptoTrendInput = z.infer<typeof AnalyzeCryptoTrendInputSchema>;
 
@@ -21,7 +21,7 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
   trend: z.enum(['bullish', 'bearish', 'neutral']).describe('The classified trend of the cryptocurrency.'),
   confidence: z.number().describe('The confidence level (0-1) of the trend classification.'),
   reason: z.string().describe('The reason for the trend classification.'),
-
+  analysis : z.string().describe('Actionable Trade Setup')
 });
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 
@@ -33,7 +33,8 @@ const prompt = ai.definePrompt({
   name: 'analyzeCryptoTrendPrompt',
   input: {schema: AnalyzeCryptoTrendInputSchema},
   output: {schema: AnalyzeCryptoTrendOutputSchema},
-  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Analyze the market data for {{cryptoSymbol}} and classify the trend as bullish, bearish, or neutral.\n\nMarket Data:\n{{marketData}}\n\nProvide a confidence level (0-1) for your classification and a brief reason for your analysis. Output the result in JSON format. Ensure the JSON is parseable.\n
+  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Analyze the market data for {{cryptoSymbol}} and classify the trend as bullish, bearish, or neutral.\nProvide a confidence level (0-1) for your classification and a brief reason for your analysis. Output the result in JSON format. Ensure the JSON is parseable.\n
+ \n**Current Market Data:**\n{{marketData}}\n\n
   **Your analysis MUST include the following:**
 1.  **High-Level Summary**: Provide an overall trend, confidence score, market sentiment, risk level, and a concise price prediction.
 2.  **AI Recommendation**: Based on everything, provide one clear, actionable recommendation: 'strong buy', 'buy', 'hold', 'sell', or 'strong sell'. A 'strong' signal indicates a high-conviction opportunity.

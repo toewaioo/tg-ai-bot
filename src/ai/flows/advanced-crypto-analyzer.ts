@@ -72,7 +72,9 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals and provide a complete trade setup. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick  and current {{marketData}} data provided.
 
 Your analysis must be holistic. Synthesize the information from all timeframes to provide a single, unified assessment. Do not just analyze each timeframe in isolation.
-**Market Data:**\n{{marketData}}\n
+**Current Market Data Json format[symbol,open,high,low,close,changes,bid,ask](The current market data for the  cryptocurrency, including price and high pices and low price from past 24 hour ago and and changes -> hourly prices desending for past 24 hour and bid for current bid price and ask for current ask price for this coin.):**\n
+{{marketData}}
+\n
 **Candlestick Data (JSON format [time, open, high, low, close, volume]):**
 {{#each multiTimeframeCandlestickData}}
 - **Timeframe: {{@key}}**
