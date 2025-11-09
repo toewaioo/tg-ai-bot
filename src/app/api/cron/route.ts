@@ -11,18 +11,18 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   console.log('Cron job started: Analyzing crypto signals.');
 
-  const uniqueCoins = ['SOL'];
+  const uniqueCoins = ['SOL',BTC];
   if (uniqueCoins.length === 0) {
     console.log('No subscriptions found. Skipping analysis.');
     return NextResponse.json({ status: 'ok', message: 'No subscriptions' });
   }
 
-  const adminChatId = -1002933829;
+  const adminChatId = 1728454364;
 
   for (const coin of uniqueCoins) {
     try {
       // 1. Fetch candlestick data for multiple timeframes
-      const timeframes = ['5m', '15m', '1hr', '6hr'];
+      const timeframes = ['5m', '15m','30m', '1hr', '6hr'];
       const candlestickDataPromises = timeframes.map(timeframe =>
           getCandlestickData(coin, timeframe).then(data => ({ timeframe, data }))
       );
@@ -40,7 +40,7 @@ export async function GET() {
 
       if (!hasData) {
         console.warn(`Could not fetch any candlestick data for ${coin}.`);
-        continue;
+        return;
       }
 
       // 2. Analyze trend with the advanced AI flow
@@ -65,7 +65,7 @@ export async function GET() {
         const message = `
 ${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 
-*Reasoning*: ${analysis.reasoningSummary}
+
 
 *Trade Setup:*
 - *Entry Price:* ${tradeSetup.entryPrice}
@@ -75,6 +75,8 @@ ${signalEmoji} *${coin} Trading Signal: ${currentSignal.toUpperCase()}*
 *Key Levels:*
 - *Support Zone:* ${tradeSetup.supportZone}
 - *Resistance Zone:* ${tradeSetup.resistanceZone}
+
+*Reasoning*: ${analysis.reasoningSummary}
 
 *Confirmation Signal to Enter:*
 ${tradeSetup.confirmationSignal}
