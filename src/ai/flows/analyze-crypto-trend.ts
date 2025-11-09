@@ -21,17 +21,7 @@ const AnalyzeCryptoTrendOutputSchema = z.object({
   trend: z.enum(['bullish', 'bearish', 'neutral']).describe('The classified trend of the cryptocurrency.'),
   confidence: z.number().describe('The confidence level (0-1) of the trend classification.'),
   reason: z.string().describe('The reason for the trend classification.'),
-  pricePrediction: z.string().describe(
-      "A unified short-to-mid-term price projection, mentioning key levels to watch, e.g., 'Price is likely to consolidate between $50k-$52k. A break above $52.5k on the 1hr chart could signal a move towards $55k, but a drop below the 6hr support at $49k would be bearish.'"
-    ),tradeSetup: z.object({
-        supportZone: z.string().describe("The key support zone price range (e.g., '$48,500 - $49,000')."),
-        resistanceZone: z.string().describe("The key resistance zone price range (e.g., '$52,000 - $52,500')."),
-        confirmationSignal: z.string().describe("A specific event that would confirm the trade signal (e.g., 'A 1hr candle close above $52,500')."),
-        breakoutFakeoutAnalysis: z.string().describe("Analysis of the potential for a breakout or a fakeout based on volume and current price action."),
-        entryPrice: z.string().describe("A suggested entry price or range for the trade."),
-        stopLoss: z.string().describe("A suggested stop-loss price to manage risk."),
-        takeProfit: z.string().describe("A suggested take-profit price or range."),
-      }).describe("A potential trade setup based on the analysis."),
+
 });
 export type AnalyzeCryptoTrendOutput = z.infer<typeof AnalyzeCryptoTrendOutputSchema>;
 

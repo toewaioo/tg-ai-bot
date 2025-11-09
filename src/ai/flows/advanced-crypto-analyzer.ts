@@ -15,7 +15,7 @@ const CandlestickDataSchema = z.string().describe('The recent candlestick data (
 const AdvancedCryptoAnalyzerInputSchema = z.object({
   cryptoSymbol: z.string().describe('The symbol of the cryptocurrency to analyze (e.g., BTC).'),
   multiTimeframeCandlestickData: z.record(CandlestickDataSchema).describe('An object where keys are timeframes (e.g., "5m", "1hr") and values are the candlestick data for that timeframe.'),
-  marketData: z.string().describe('The recent market data for the cryptocurrency, including price and volume.'),
+  marketData: z.string().describe('The current market data for the  cryptocurrency, including price and high pices and low price from past 24 hour ago and and changes -> hourly prices desending for past 24 hour and bid for current bid price and ask for current ask price for this coin.'),
 });
 export type AdvancedCryptoAnalyzerInput = z.infer<typeof AdvancedCryptoAnalyzerInputSchema>;
 
@@ -69,7 +69,7 @@ const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
-  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals and provide a complete trade setup. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick  and {{marketData}} data provided.
+  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals and provide a complete trade setup. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick  and current {{marketData}} data provided.
 
 Your analysis must be holistic. Synthesize the information from all timeframes to provide a single, unified assessment. Do not just analyze each timeframe in isolation.
 **Market Data:**\n{{marketData}}\n
