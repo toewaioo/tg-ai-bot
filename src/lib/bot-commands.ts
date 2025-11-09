@@ -72,7 +72,6 @@ export const setupCommands = (bot: Bot) => {
 
 
   const welcomeMessage = `Welcome to your AI Crypto Trading Assistant! 🤖
-
 I constantly watch the market and will automatically send you a notification when my AI analysis identifies a *strong buy* or *strong sell* signal for a coin you are subscribed to.
 
 *Commands:*
@@ -90,16 +89,18 @@ Use the buttons below for a quick analysis of popular coins.
 
   bot.command('start', (ctx) => {
     ctx.reply(welcomeMessage, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: analyzeKeyboard,
     });
+    return;
   });
 
   bot.command('help', (ctx) => {
     ctx.reply(welcomeMessage, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: analyzeKeyboard,
     });
+    return;
   });
 
   bot.command('subscribe', (ctx) => {
