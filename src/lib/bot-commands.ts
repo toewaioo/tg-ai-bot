@@ -1,3 +1,4 @@
+
 import type { Bot, Context } from 'grammy';
 import { InlineKeyboard } from 'grammy';
 import {
@@ -72,20 +73,20 @@ export const setupCommands = (bot: Bot) => {
 
 
   const welcomeMessage = `Welcome to your AI Crypto Trading Assistant! 🤖
-I constantly watch the market and will automatically send you a notification when my AI analysis identifies a *strong buy* or *strong sell* signal for a coin you are subscribed to.
+I constantly watch the market and will automatically send you a notification when my AI analysis identifies a <b>strong buy</b> or <b>strong sell</b> signal for a coin you are subscribed to.
 
-*Commands:*
-/subscribe <COIN> - Get signal notifications for a coin (e.g., /subscribe BTC).
-/unsubscribe <COIN> - Stop getting notifications.
+<b>Commands:</b>
+/subscribe &lt;COIN&gt; - Get signal notifications for a coin (e.g., /subscribe BTC).
+/unsubscribe &lt;COIN&gt; - Stop getting notifications.
 /list - See your current subscriptions.
-/analyze <COIN> - Get an instant AI analysis for a coin.
-/advanced_analyze <COIN> - Get a detailed, multi-timeframe analysis report with a trade setup.
+/analyze &lt;COIN&gt; - Get an instant AI analysis for a coin.
+/advanced_analyze &lt;COIN&gt; - Get a detailed, multi-timeframe analysis report with a trade setup.
 /help - Show this message again.
 
-*Quick Analysis:*
+<b>Quick Analysis:</b>
 Use the buttons below for a quick analysis of popular coins.
 
-*Disclaimer*: This is an AI-powered tool and its analysis is for informational purposes only. It is not financial advice. All trading involves risk. Please do your own research.`;
+<i>Disclaimer: This is an AI-powered tool and its analysis is for informational purposes only. It is not financial advice. All trading involves risk. Please do your own research.</i>`;
 
   bot.command('start', (ctx) => {
     ctx.reply(welcomeMessage, {
