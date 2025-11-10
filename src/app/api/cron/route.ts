@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json({ status: 'ok', message: 'No subscriptions' });
   }
 
-  const adminChatId = 1728454364;
+  const adminChatId = -1002933829;
 
   for (const coin of uniqueCoins) {
     try {
@@ -40,12 +40,12 @@ export async function GET() {
 
       if (!hasData) {
         console.warn(`Could not fetch any candlestick data for ${coin}.`);
-        return;
+        return NextResponse.json({ status: 'error', message: `No candlestick data for ${coin}` });
       }
       const marketData = await getCryptoData(coin);
       if (!marketData) {
-        console.warn(`Could not fetch any candlestick data for ${coin}.`);
-        return;
+        console.warn(`Could not fetch market data for ${coin}.`);
+        return NextResponse.json({ status: 'error', message: `No market data for ${coin}` });
       }
       // 2. Analyze trend with the advanced AI flow
       const analysis = await advancedCryptoAnalyzer({

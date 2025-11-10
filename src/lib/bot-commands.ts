@@ -62,7 +62,7 @@ async function performAnalysis(ctx: Context, coin: string) {
 }
 
 export const setupCommands = (bot: Bot) => {
-  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE','BNB','LTC','LINK','DOGE'];
+  const popularCoins = ['BTC', 'ETH', 'SOL', 'DOGE'];
   const analyzeKeyboard = new InlineKeyboard();
   popularCoins.forEach((coin, index) => {
     analyzeKeyboard.text(`Analyze ${coin}`, `analyze_${coin}`);
@@ -164,7 +164,7 @@ Use the buttons below for a quick analysis of popular coins.
 
     await ctx.reply(`🔬 Performing comprehensive multi-timeframe analysis for ${coin}. This may take a moment...`);
 
-    const timeframes = ['5m', '15m','30m', '1hr', '6hr'];
+    const timeframes = ['5m', '15m', '30m', '1hr', '6hr'];
 
     try {
         // 1. Fetch all candlestick data in parallel
@@ -192,6 +192,11 @@ Use the buttons below for a quick analysis of popular coins.
 
         // 2. Make a single AI request with all the data
         const marketData = await getCryptoData(coin);
+        if (!marketData) {
+          await ctx.reply(`Could not fetch market data for ${coin}. Please check the symbol.`);
+          return;
+        }
+
         const analysis = await advancedCryptoAnalyzer({
             cryptoSymbol: coin,
             multiTimeframeCandlestickData: multiTimeframeCandlestickData,
@@ -227,7 +232,7 @@ ${analysis.reasoningSummary}
 - *Support Zone:* ${tradeSetup.supportZone}
 - *Resistance Zone:* ${tradeSetup.resistanceZone}
 
-*Confirmation Signal:*
+*Confirmation Signal to Enter:*
 ${tradeSetup.confirmationSignal}
 
 *Breakout/Fakeout Analysis:*
