@@ -22,6 +22,7 @@ export type AdvancedCryptoAnalyzerInput = z.infer<typeof AdvancedCryptoAnalyzerI
 const AdvancedCryptoAnalyzerOutputSchema = z.object({
   overallTrend: z.enum(['strong bullish', 'bullish', 'neutral', 'bearish', 'strong bearish']).describe('The synthesized overall trend, considering all timeframes.'),
   confidence: z.number().describe('The confidence level (0-1) of the overall trend classification.'),
+  shortTermMomentum: z.enum(['up', 'down', 'sideways']).describe('The immediate momentum based on the 5m and 15m charts.'),
   comprehensiveAnalysis: z.string().describe(
     "A detailed, multi-timeframe technical analysis. It should discuss how different timeframes align or diverge, identify major chart patterns, key support/resistance levels valid across timeframes, and interpret volume and momentum indicators (RSI, MACD) in a holistic manner."
   ),
@@ -69,34 +70,33 @@ const prompt = ai.definePrompt({
   name: 'advancedCryptoAnalyzerPrompt',
   input: { schema: AdvancedCryptoAnalyzerInputSchema },
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
-  prompt: `You are an expert financial analyst and AI advisor for the cryptocurrency markets. Your main goal is to identify strong trading signals and provide a complete trade setup. Your task is to perform a comprehensive, multi-timeframe analysis for {{cryptoSymbol}} based on the candlestick  and current {{marketData}} data provided.
+  prompt: `You are an expert crypto scalper and short-term technical analyst AI. Your primary goal is to identify immediate, high-probability trade setups for {{cryptoSymbol}} using a multi-timeframe approach.
 
-Your analysis must be holistic. Synthesize the information from all timeframes to provide a single, unified assessment. Do not just analyze each timeframe in isolation.
-**Current Market Data Json format[symbol,open,high,low,close,changes,bid,ask](The current market data for the  cryptocurrency, including price and high pices and low price from past 24 hour ago and and changes -> hourly prices desending for past 24 hour and bid for current bid price and ask for current ask price for this coin.):**\n
+**Your core focus is the 5m and 15m timeframes.** Use these to find an entry. Use the 1hr and 6hr timeframes to understand the larger trend, context, and major support/resistance zones. Your final recommendation must be actionable for a short-term trader.
+
+**Current Market Data (JSON format [symbol,open,high,low,close,changes,bid,ask]):**
 {{marketData}}
-\n
+
 **Candlestick Data (JSON format [time, open, high, low, close, volume]):**
 {{#each multiTimeframeCandlestickData}}
 - **Timeframe: {{@key}}**
   {{{this}}}
 {{/each}}
 
+**Your Analysis MUST Include:**
 
-**Your analysis MUST include the following:**
+1.  **Short-Term Focus**: Prioritize the 5m and 15m charts. What patterns are forming right now? Where is the immediate momentum (up, down, or sideways)? This is for the `shortTermMomentum` field.
+2.  **Holistic Recommendation**: Synthesize all timeframes to provide a single, clear `aiRecommendation` ('strong buy', 'buy', 'hold', 'sell', 'strong sell'). A 'strong' signal is a high-conviction setup you believe is actionable *now*.
+3.  **Contextual Analysis**: Briefly explain how the short-term view (5m/15m) fits within the mid-term trend (1hr/6hr). Are you trading with the trend or counter-trend? This goes in the `comprehensiveAnalysis`.
+4.  **Actionable Trade Setup**: This is the most critical part. Provide a precise, actionable trade setup for a short-term trader.
+    *   **Entry Price:** A specific price or tight range to enter the trade.
+    *   **Stop-Loss (SL):** A tight stop-loss based on recent price structure on the 5m/15m chart.
+    *   **Take-Profit (TP):** Realistic take-profit targets. Provide one or two.
+    *   **Confirmation Signal:** What is the one event on the 5m or 15m chart that confirms your entry? (e.g., "A 5m candle close above $68,200").
+    *   **Support/Resistance:** Identify the *immediate* support and resistance levels from the 15m/1hr charts that matter for this trade.
+5.  **Reasoning**: In `reasoningSummary`, explain *why* this is a good short-term trade. What specific indicators or patterns on the lower timeframes are you basing this on?
 
-1.  **High-Level Summary**: Provide an overall trend, confidence score, market sentiment, risk level, and a concise price prediction.
-2.  **AI Recommendation**: Based on everything, provide one clear, actionable recommendation: 'strong buy', 'buy', 'hold', 'sell', or 'strong sell'. A 'strong' signal indicates a high-conviction opportunity.
-3.  **Comprehensive Analysis**: Discuss your findings in detail. How do short-term patterns fit into the larger structure? Identify major chart patterns, support/resistance, volume trends, and momentum indicators (RSI, MACD) in a multi-timeframe context.
-4.  **Actionable Trade Setup**: This is critical. Provide a specific and actionable trade setup.
-    *   **Support & Resistance:** Identify the most immediate and critical support and resistance zones.
-    *   **Confirmation Signal:** What specific event would confirm your AI recommendation? (e.g., "A 4hr candle close above $52,500").
-    *   **Breakout/Fakeout:** Briefly analyze the potential for a breakout or fakeout. Look at volume and recent price action near key levels.
-    *   **Entry Price:** Suggest a specific entry price or a narrow range.
-    *   **Stop-Loss (SL):** Provide a clear stop-loss price to protect against a loss.
-    *   **Take-Profit (TP):** Suggest a realistic take-profit target.
-5.  **Reasoning Summary**: Briefly summarize how you weighed the different timeframes and indicators to arrive at your final recommendation and trade setup.
-
-Fill out ALL fields in the output schema with your detailed, synthesized analysis.Explain to burmese language.
+Fill out ALL fields in the output schema. Your analysis must be sharp, concise, and geared for a trader looking to act quickly. Explain in Burmese language.
 `,
 });
 
