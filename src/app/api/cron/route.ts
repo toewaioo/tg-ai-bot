@@ -17,7 +17,8 @@ export async function GET() {
     return NextResponse.json({ status: 'ok', message: 'No subscriptions' });
   }
 
-  const adminChatId = -1002933829;
+  const adminChatId = 1728454364;
+
 
   for (const coin of uniqueCoins) {
     try {

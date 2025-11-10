@@ -85,16 +85,16 @@ const prompt = ai.definePrompt({
 
 **Your Analysis MUST Include:**
 
-1.  **Short-Term Focus**: Prioritize the 5m and 15m charts. What patterns are forming right now? Where is the immediate momentum (up, down, or sideways)? This is for the `shortTermMomentum` field.
-2.  **Holistic Recommendation**: Synthesize all timeframes to provide a single, clear `aiRecommendation` ('strong buy', 'buy', 'hold', 'sell', 'strong sell'). A 'strong' signal is a high-conviction setup you believe is actionable *now*.
-3.  **Contextual Analysis**: Briefly explain how the short-term view (5m/15m) fits within the mid-term trend (1hr/6hr). Are you trading with the trend or counter-trend? This goes in the `comprehensiveAnalysis`.
+1.  **Short-Term Focus**: Prioritize the 5m and 15m charts. What patterns are forming right now? Where is the immediate momentum (up, down, or sideways)? This is for the "shortTermMomentum" field.
+2.  **Holistic Recommendation**: Synthesize all timeframes to provide a single, clear "aiRecommendation" ('strong buy', 'buy', 'hold', 'sell', 'strong sell'). A 'strong' signal is a high-conviction setup you believe is actionable *now*.
+3.  **Contextual Analysis**: Briefly explain how the short-term view (5m/15m) fits within the mid-term trend (1hr/6hr). Are you trading with the trend or counter-trend? This goes in the "comprehensiveAnalysis".
 4.  **Actionable Trade Setup**: This is the most critical part. Provide a precise, actionable trade setup for a short-term trader.
     *   **Entry Price:** A specific price or tight range to enter the trade.
     *   **Stop-Loss (SL):** A tight stop-loss based on recent price structure on the 5m/15m chart.
     *   **Take-Profit (TP):** Realistic take-profit targets. Provide one or two.
     *   **Confirmation Signal:** What is the one event on the 5m or 15m chart that confirms your entry? (e.g., "A 5m candle close above $68,200").
     *   **Support/Resistance:** Identify the *immediate* support and resistance levels from the 15m/1hr charts that matter for this trade.
-5.  **Reasoning**: In `reasoningSummary`, explain *why* this is a good short-term trade. What specific indicators or patterns on the lower timeframes are you basing this on?
+5.  **Reasoning**: In "reasoningSummary", explain *why* this is a good short-term trade. What specific indicators or patterns on the lower timeframes are you basing this on?
 
 Fill out ALL fields in the output schema. Your analysis must be sharp, concise, and geared for a trader looking to act quickly. Explain in Burmese language.
 `,
