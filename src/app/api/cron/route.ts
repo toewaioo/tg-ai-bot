@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ status: 'ok', message: 'No coins to analyze' });
   }
 
-  const adminChatId = -1002933829;
+  const adminChatId = 1728454364;
 
   for (const coin of uniqueCoins) {
     try {
