@@ -73,7 +73,7 @@ const prompt = ai.definePrompt({
   output: { schema: AdvancedCryptoAnalyzerOutputSchema },
   prompt: `You are an expert crypto scalper and short-term technical analyst AI. Your primary goal is to identify immediate, high-probability trade setups for {{cryptoSymbol}} using a multi-timeframe approach.
 
-**Your core focus is the 5m and 15m timeframes.** Use these to find an entry. Use the 1hr and 6hr timeframes to understand the larger trend, context, and major support/resistance zones. Your final recommendation must be actionable for a short-term trader.
+**Your core focus is the 5m and 15m timeframes especially 15m.** Use these to find an entry. Use the 1hr and 6hr timeframes to understand the larger trend, context, and major support/resistance zones. Your final recommendation must be actionable for a short-term trader.
 
 **Current Market Data (JSON format [symbol,open,high,low,close,changes,bid,ask]):**
 {{marketData}}
