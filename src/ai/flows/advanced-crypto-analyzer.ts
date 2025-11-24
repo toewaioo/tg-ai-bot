@@ -115,7 +115,7 @@ const advancedCryptoAnalyzerFlow = ai.defineFlow(
     outputSchema: AdvancedCryptoAnalyzerOutputSchema,
   },
   async input => {
-    const { output } } await prompt(input);
+    const { output } = await prompt(input);
     return {
       ...output!,
       timestamp: new Date().toUTCString(),
