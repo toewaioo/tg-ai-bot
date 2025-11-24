@@ -16,6 +16,7 @@ const AdvancedCryptoAnalyzerInputSchema = z.object({
   cryptoSymbol: z.string().describe('The symbol of the cryptocurrency to analyze (e.g., BTC).'),
   multiTimeframeCandlestickData: z.record(CandlestickDataSchema).describe('An object where keys are timeframes (e.g., "5m", "1hr") and values are the candlestick data for that timeframe.'),
   marketData: z.string().describe('The current market data for the  cryptocurrency, including price and high pices and low price from past 24 hour ago and and changes -> hourly prices desending for past 24 hour and bid for current bid price and ask for current ask price for this coin.'),
+  previousSignals: z.string().optional().describe('A JSON string of recent signals you have generated for this coin. Use this to learn from your past performance and improve your accuracy.'),
 });
 export type AdvancedCryptoAnalyzerInput = z.infer<typeof AdvancedCryptoAnalyzerInputSchema>;
 
@@ -55,7 +56,7 @@ const AdvancedCryptoAnalyzerOutputSchema = z.object({
     breakoutFakeoutAnalysis: z.string().describe("Analysis of the potential for a breakout or a fakeout based on volume and current price action."),
     entryPrice: z.string().describe("A suggested entry price or range for the trade."),
     stopLoss: z.string().describe("A suggested stop-loss price to manage risk."),
-    takeProfit: z.string().describe("A suggested take-profit price or range."),
+    takeProfit: z_string().describe("A suggested take-profit price or range."),
   }).describe("A potential trade setup based on the analysis."),
   timestamp: z.string().describe("UTC timestamp of when the analysis was generated.")
 });
@@ -83,6 +84,12 @@ const prompt = ai.definePrompt({
   {{{this}}}
 {{/each}}
 
+{{#if previousSignals}}
+**Previous Signals History (for your learning):**
+Here are some of the recent signals you generated. Analyze your own past performance. Did the market move as you predicted? Use this reflection to refine your current analysis and improve accuracy.
+{{previousSignals}}
+{{/if}}
+
 **Your Analysis MUST Include:**
 
 1.  **Short-Term Focus**: Prioritize the 5m and 15m charts. What patterns are forming right now? Where is the immediate momentum (up, down, or sideways)? This is for the "shortTermMomentum" field.
@@ -96,7 +103,7 @@ const prompt = ai.definePrompt({
     *   **Support/Resistance:** Identify the *immediate* support and resistance levels from the 15m/1hr charts that matter for this trade.
 5.  **Reasoning**: In "reasoningSummary", explain *why* this is a good short-term trade. What specific indicators or patterns on the lower timeframes are you basing this on?
 
-Fill out ALL fields in the output schema. Your analysis must be sharp, concise, and geared for a trader looking to act quickly. Explain in Burmese language.
+Fill out ALL fields in the output schema. Your analysis must be sharp, concise, and geared for a trader looking to act quickly.
 `,
 });
 
