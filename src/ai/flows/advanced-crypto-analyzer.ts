@@ -56,7 +56,7 @@ const AdvancedCryptoAnalyzerOutputSchema = z.object({
     breakoutFakeoutAnalysis: z.string().describe("Analysis of the potential for a breakout or a fakeout based on volume and current price action."),
     entryPrice: z.string().describe("A suggested entry price or range for the trade."),
     stopLoss: z.string().describe("A suggested stop-loss price to manage risk."),
-    takeProfit: z_string().describe("A suggested take-profit price or range."),
+    takeProfit: z.string().describe("A suggested take-profit price or range."),
   }).describe("A potential trade setup based on the analysis."),
   timestamp: z.string().describe("UTC timestamp of when the analysis was generated.")
 });
@@ -115,10 +115,12 @@ const advancedCryptoAnalyzerFlow = ai.defineFlow(
     outputSchema: AdvancedCryptoAnalyzerOutputSchema,
   },
   async input => {
-    const { output } = await prompt(input);
+    const { output } } await prompt(input);
     return {
       ...output!,
       timestamp: new Date().toUTCString(),
     };
   }
 );
+
+    
